@@ -35,13 +35,14 @@ public final class Game {
 	private final static Dimension CARD_SIZE = new Dimension(140, 190);
 	private final static int X_OFFSET = 86, Y_OFFSET = 145;
 	private Region setDeckRegion, setCardRegion, backupButtonRegion,
-			fullScreenButtonRegion;
+			fullScreenButtonRegion, newGameRegion;
 	private ArrayList<Backup> backupList = new ArrayList<Backup>();
 
 	public Game() {
 		frame = new Frame();
 		activeRegions = new ArrayList<Region>();
 		this.SCREEN_SIZE = frame.getSize();
+		newGameRegion = new Region(40, 55, 130, 50, -999);
 		backupButtonRegion = new Region(SCREEN_SIZE.width - 145,
 				SCREEN_SIZE.height - 145, 80, 80, -999);
 		setDeckRegion = new Region(
@@ -82,6 +83,18 @@ public final class Game {
 			}
 
 			public void mouseReleased(MouseEvent e) {
+				if (newGameRegion.isContained(e.getX(), e.getY())) {
+					int answer = -1;
+					while (answer == -1)
+						answer = JOptionPane.showOptionDialog(null,
+								"                            Are you sure?",
+								"TriPeaks  |  by Adam J Seidman",
+								JOptionPane.YES_NO_OPTION,
+								JOptionPane.PLAIN_MESSAGE, null, null, null);
+					if (answer == 0)
+						restart();
+					return;
+				}
 				if (fullScreenButtonRegion.isContained(e.getX(), e.getY())) {
 					frame.setExtendedState(frame.getExtendedState()
 							| JFrame.MAXIMIZED_BOTH);
@@ -113,6 +126,24 @@ public final class Game {
 					setCard = setDeck.get(0);
 					setDeck.remove(0);
 					redraw();
+					if (activeRegions.size() == 0) {
+						endGameSequence(true);
+						return;
+					} else if (setDeck.size() > 0)
+						return;
+					else {
+						for (int i = 0; i < 28; i++) {
+							if (deck.cards[i] == null
+									|| deck.cards[i].getNumber() < 0)
+								continue;
+							if (Math.abs(setCard.getNumber()
+									- deck.cards[i].getNumber()) == 1
+									|| Math.abs(setCard.getNumber()
+											- deck.cards[i].getNumber()) == 12)
+								return;
+						}
+						endGameSequence(false);
+					}
 					return;
 				}
 				int id = -1;
@@ -135,6 +166,24 @@ public final class Game {
 						}
 					deck.cards[id] = null;
 					redraw();
+					if (activeRegions.size() == 0) {
+						endGameSequence(true);
+						return;
+					} else if (setDeck.size() > 0)
+						return;
+					else {
+						for (int i = 0; i < 28; i++) {
+							if (deck.cards[i] == null
+									|| deck.cards[i].getNumber() < 0)
+								continue;
+							if (Math.abs(setCard.getNumber()
+									- deck.cards[i].getNumber()) == 1
+									|| Math.abs(setCard.getNumber()
+											- deck.cards[i].getNumber()) == 12)
+								return;
+						}
+						endGameSequence(false);
+					}
 				}
 			}
 		});
@@ -175,7 +224,7 @@ public final class Game {
 				int answer = -1;
 				while (answer == -1)
 					answer = JOptionPane.showOptionDialog(null,
-							"          Are you sure you want to quit?",
+							"           Are you sure you want to quit?",
 							"TriPeaks  |  by Adam J Seidman",
 							JOptionPane.YES_NO_OPTION,
 							JOptionPane.PLAIN_MESSAGE, null, null, null);
@@ -306,6 +355,18 @@ public final class Game {
 	private void redraw() {
 		frame.resetBackground();
 		Graphics g = frame.getGraphics();
+		g.setColor(Color.BLACK);
+		g.fillRoundRect(backupButtonRegion.getX() - 1,
+				backupButtonRegion.getY() - 1,
+				backupButtonRegion.getWidth() + 2,
+				backupButtonRegion.getHeight() + 2, 15, 15);
+		g.fillRoundRect(fullScreenButtonRegion.getX() - 1,
+				fullScreenButtonRegion.getY() - 1,
+				fullScreenButtonRegion.getWidth() + 2,
+				fullScreenButtonRegion.getHeight() + 2, 8, 8);
+		g.fillRoundRect(newGameRegion.getX() - 1, newGameRegion.getY() - 1,
+				newGameRegion.getWidth() + 2, newGameRegion.getHeight() + 2,
+				30, 30);
 		g.setColor(new Color(75, 75, 75));
 		g.fillRoundRect(backupButtonRegion.getX(), backupButtonRegion.getY(),
 				backupButtonRegion.getWidth(), backupButtonRegion.getHeight(),
@@ -315,7 +376,13 @@ public final class Game {
 				fullScreenButtonRegion.getY(),
 				fullScreenButtonRegion.getWidth(),
 				fullScreenButtonRegion.getHeight(), 8, 8);
+		g.setColor(new Color(75, 0, 200));
+		g.fillRoundRect(newGameRegion.getX(), newGameRegion.getY(),
+				newGameRegion.getWidth(), newGameRegion.getHeight(), 30, 30);
 		g.setFont(new Font("Verdana", Font.ITALIC, 18));
+		g.setColor(new Color(240, 240, 240));
+		g.drawString("NEW GAME", newGameRegion.getX() + 13,
+				newGameRegion.getY() + 30);
 		g.setColor(Color.BLACK);
 		g.drawString("UNDO", backupButtonRegion.getX() + 14,
 				backupButtonRegion.getY() + 44);
@@ -337,22 +404,6 @@ public final class Game {
 		g.drawString(Integer.toString(setDeckSize) + " Card"
 				+ (setDeckSize == 1 ? "" : "s") + " Left",
 				setCardRegion.getX() + 225, setCardRegion.getY() + 85);
-		if (activeRegions.size() == 0) {
-			this.endGameSequence(true);
-			return;
-		} else if (setDeck.size() > 0)
-			return;
-		else {
-			for (int i = 0; i < 28; i++) {
-				if (deck.cards[i] == null || deck.cards[i].getNumber() < 0)
-					continue;
-				if (Math.abs(setCard.getNumber() - deck.cards[i].getNumber()) == 1
-						|| Math.abs(setCard.getNumber()
-								- deck.cards[i].getNumber()) == 12)
-					return;
-			}
-			this.endGameSequence(false);
-		}
 	}
 
 	private void restart() {
