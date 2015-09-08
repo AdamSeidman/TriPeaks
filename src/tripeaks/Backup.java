@@ -14,7 +14,9 @@ public final class Backup {
 	public Backup(Deck d, Card setCard, ArrayList<Card> setList) {
 		this.D = d;
 		this.SET_CARD = setCard;
-		this.SET_LIST = setList;
+		this.SET_LIST = new ArrayList<Card>();
+		for(Card i : setList)
+			this.SET_LIST.add(i);
 	}
 
 	public Deck getDeck() {
