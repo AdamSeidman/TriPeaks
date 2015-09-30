@@ -13,8 +13,8 @@ public final class Frame extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private static final Color BACKGROUND = new Color(30, 130, 70);
 	private static final String TITLE = "TriPeaks  |  by Adam J Seidman";
-	private static final Dimension SIZE = Toolkit.getDefaultToolkit()
-			.getScreenSize();
+	private static final Dimension SIZE = Util.getModified(Toolkit.getDefaultToolkit()
+			.getScreenSize());
 	private Container pane;
 
 	public Frame() {

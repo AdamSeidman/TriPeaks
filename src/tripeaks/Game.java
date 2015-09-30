@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -22,6 +23,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import tripeaks.graphics.Frame;
+import tripeaks.graphics.Util;
 
 public final class Game {
 
@@ -32,8 +34,10 @@ public final class Game {
 	private Region[] regions = new Region[28];
 	private Frame frame;
 	private final Dimension SCREEN_SIZE;
-	private final static Dimension CARD_SIZE = new Dimension(140, 190);
-	private final static int X_OFFSET = 86, Y_OFFSET = 145;
+	private final static Dimension CARD_SIZE = new Dimension(
+			Util.getModified(140), Util.getModified(190));
+	private final static int X_OFFSET = Util.getModified(86), Y_OFFSET = Util
+			.getModified(145);
 	private Region setDeckRegion, setCardRegion, backupButtonRegion,
 			fullScreenButtonRegion, newGameRegion;
 	private ArrayList<Backup> backupList = new ArrayList<Backup>();
@@ -83,7 +87,16 @@ public final class Game {
 			}
 
 			public void mouseReleased(MouseEvent e) {
-				if (newGameRegion.isContained(e.getX(), e.getY())) {
+				int x = e.getX(), y = e.getY();
+				if (Util.screenIsModified()
+						&& frame.getExtendedState() == JFrame.MAXIMIZED_BOTH) {
+					System.out.println("USED");
+					y -= (Toolkit.getDefaultToolkit().getScreenSize().height - (Util.REFERENCE_SCREEN.height * Util
+							.getModifiedRatio())) / 4;
+					x -= (Toolkit.getDefaultToolkit().getScreenSize().width - (Util.REFERENCE_SCREEN.height * Util
+							.getModifiedRatio())) / 4;
+				}
+				if (newGameRegion.isContained(x, y)) {
 					int answer = -1;
 					while (answer == -1)
 						answer = JOptionPane.showOptionDialog(null,
@@ -95,12 +108,21 @@ public final class Game {
 						restart();
 					return;
 				}
-				if (fullScreenButtonRegion.isContained(e.getX(), e.getY())) {
-					frame.setExtendedState(frame.getExtendedState()
-							| JFrame.MAXIMIZED_BOTH);
+				if (fullScreenButtonRegion.isContained(x, y)) {
+					if (frame.getExtendedState() != JFrame.MAXIMIZED_BOTH)
+						frame.setExtendedState(frame.getExtendedState()
+								| JFrame.MAXIMIZED_BOTH);
+					else {
+						frame.setSize(new Dimension(
+								(int) (((double) Util.REFERENCE_SCREEN.width) * Util
+										.getModifiedRatio()),
+								(int) (((double) Util.REFERENCE_SCREEN.height) * Util
+										.getModifiedRatio())));
+						frame.setLocationRelativeTo(null);
+					}
 					Thread t = new Thread() {
 						public void run() {
-							long time = System.currentTimeMillis() + 250;
+							long time = System.currentTimeMillis() + 175;
 							while (System.currentTimeMillis() < time)
 								System.out.print("");
 							redraw();
@@ -109,7 +131,7 @@ public final class Game {
 					t.start();
 					return;
 				}
-				if (backupButtonRegion.isContained(e.getX(), e.getY())) {
+				if (backupButtonRegion.isContained(x, y)) {
 					if (backupList.size() == 0)
 						return;
 					setDeck = backupList.get(0).getSetList();
@@ -119,7 +141,7 @@ public final class Game {
 					redraw();
 					return;
 				}
-				if (setDeckRegion.isContained(e.getX(), e.getY())) {
+				if (setDeckRegion.isContained(x, y)) {
 					if (setDeck.size() == 0)
 						return;
 					backup();
@@ -148,7 +170,7 @@ public final class Game {
 				}
 				int id = -1;
 				for (Region i : activeRegions)
-					if (i.isContained(e.getX(), e.getY())) {
+					if (i.isContained(x, y)) {
 						id = i.getID();
 						break;
 					}
@@ -353,57 +375,70 @@ public final class Game {
 	}
 
 	private void redraw() {
+		int yOffset = 0, xOffset = 0;
+		if (Util.screenIsModified()
+				&& this.frame.getExtendedState() == JFrame.MAXIMIZED_BOTH) {
+			yOffset += (Toolkit.getDefaultToolkit().getScreenSize().height - (Util.REFERENCE_SCREEN.height * Util
+					.getModifiedRatio())) / 4;
+			xOffset += (Toolkit.getDefaultToolkit().getScreenSize().width - (Util.REFERENCE_SCREEN.height * Util
+					.getModifiedRatio())) / 4;
+		}
 		frame.resetBackground();
 		Graphics g = frame.getGraphics();
 		g.setColor(Color.BLACK);
-		g.fillRoundRect(backupButtonRegion.getX() - 1,
-				backupButtonRegion.getY() - 1,
+		g.fillRoundRect(backupButtonRegion.getX() - 1 + xOffset,
+				backupButtonRegion.getY() - 1 + yOffset,
 				backupButtonRegion.getWidth() + 2,
 				backupButtonRegion.getHeight() + 2, 15, 15);
-		g.fillRoundRect(fullScreenButtonRegion.getX() - 1,
-				fullScreenButtonRegion.getY() - 1,
+		g.fillRoundRect(fullScreenButtonRegion.getX() - 1 + xOffset,
+				fullScreenButtonRegion.getY() - 1 + yOffset,
 				fullScreenButtonRegion.getWidth() + 2,
 				fullScreenButtonRegion.getHeight() + 2, 8, 8);
-		g.fillRoundRect(newGameRegion.getX() - 1, newGameRegion.getY() - 1,
+		g.fillRoundRect(newGameRegion.getX() - 1 + xOffset,
+				newGameRegion.getY() - 1 + yOffset,
 				newGameRegion.getWidth() + 2, newGameRegion.getHeight() + 2,
 				30, 30);
 		g.setColor(new Color(75, 75, 75));
-		g.fillRoundRect(backupButtonRegion.getX(), backupButtonRegion.getY(),
+		g.fillRoundRect(backupButtonRegion.getX() + xOffset,
+				backupButtonRegion.getY() + yOffset,
 				backupButtonRegion.getWidth(), backupButtonRegion.getHeight(),
 				15, 15);
 		g.setColor(new Color(210, 210, 210));
-		g.fillRoundRect(fullScreenButtonRegion.getX(),
-				fullScreenButtonRegion.getY(),
+		g.fillRoundRect(fullScreenButtonRegion.getX() + xOffset,
+				fullScreenButtonRegion.getY() + yOffset,
 				fullScreenButtonRegion.getWidth(),
 				fullScreenButtonRegion.getHeight(), 8, 8);
 		g.setColor(new Color(75, 0, 200));
-		g.fillRoundRect(newGameRegion.getX(), newGameRegion.getY(),
-				newGameRegion.getWidth(), newGameRegion.getHeight(), 30, 30);
+		g.fillRoundRect(newGameRegion.getX() + xOffset, newGameRegion.getY()
+				+ yOffset, newGameRegion.getWidth(), newGameRegion.getHeight(),
+				30, 30);
 		g.setFont(new Font("Verdana", Font.ITALIC, 18));
 		g.setColor(new Color(240, 240, 240));
-		g.drawString("NEW GAME", newGameRegion.getX() + 13,
-				newGameRegion.getY() + 30);
+		g.drawString("NEW GAME", newGameRegion.getX() + 13 + xOffset,
+				newGameRegion.getY() + 30 + yOffset);
 		g.setColor(Color.BLACK);
-		g.drawString("UNDO", backupButtonRegion.getX() + 14,
-				backupButtonRegion.getY() + 44);
-		g.drawString("FULLSCREEN", fullScreenButtonRegion.getX() + 5,
-				fullScreenButtonRegion.getY() + 22);
+		g.drawString("UNDO", backupButtonRegion.getX() + 14 + xOffset,
+				backupButtonRegion.getY() + 44 + yOffset);
+		g.drawString("FULLSCREEN", fullScreenButtonRegion.getX() + 5 + xOffset,
+				fullScreenButtonRegion.getY() + 22 + yOffset);
 		this.assignActiveRegions();
 		for (int i = 0; i < 28; i++) {
 			if (deck.cards[i] != null)
-				deck.cards[i].draw(g, regions[i].getX(), regions[i].getY());
+				deck.cards[i].draw(g, regions[i].getX() + xOffset,
+						regions[i].getY() + yOffset);
 		}
-		setCard.draw(frame.getGraphics(), setCardRegion.getX(),
-				setCardRegion.getY());
+		setCard.draw(frame.getGraphics(), setCardRegion.getX() + xOffset,
+				setCardRegion.getY() + yOffset);
 		int setDeckSize = setDeck.size();
 		if (setDeckSize > 0)
-			new Card(new Club(), -1).draw(g, setDeckRegion.getX(),
-					setDeckRegion.getY());
+			new Card(new Club(), -1).draw(g, setDeckRegion.getX() + xOffset,
+					setDeckRegion.getY() + yOffset);
 		g.setColor(Color.BLACK);
-		g.setFont(new Font("Verdana", Font.BOLD, 40));
+		g.setFont(new Font("Verdana", Font.BOLD, Util.getModified(40)));
 		g.drawString(Integer.toString(setDeckSize) + " Card"
-				+ (setDeckSize == 1 ? "" : "s") + " Left",
-				setCardRegion.getX() + 225, setCardRegion.getY() + 85);
+				+ (setDeckSize == 1 ? "" : "s") + " Left", setCardRegion.getX()
+				+ xOffset + Util.getModified(225),
+				setCardRegion.getY() + Util.getModified(85) + yOffset);
 	}
 
 	private void restart() {
