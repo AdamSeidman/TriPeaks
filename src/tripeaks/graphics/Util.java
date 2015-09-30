@@ -1,6 +1,7 @@
 package tripeaks.graphics;
 
 import java.awt.Dimension;
+import java.awt.Toolkit;
 
 public abstract class Util {
 
@@ -24,7 +25,7 @@ public abstract class Util {
 	}
 
 	public static double getModifiedRatio() {
-		Dimension d = new Dimension(1280, 1024);// Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		double ratio = Math.min(
 				(((double) d.width) / ((double) REFERENCE_SCREEN.width)),
 				(((double) d.height) / ((double) REFERENCE_SCREEN.height)));
