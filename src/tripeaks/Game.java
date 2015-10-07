@@ -46,16 +46,16 @@ public final class Game {
 		frame = new Frame();
 		activeRegions = new ArrayList<Region>();
 		this.SCREEN_SIZE = frame.getSize();
-		newGameRegion = new Region(40, 55, 130, 50, -999);
-		backupButtonRegion = new Region(SCREEN_SIZE.width - 145,
-				SCREEN_SIZE.height - 145, 80, 80, -999);
+		newGameRegion = new Region(Util.getModified(40), Util.getModified(55), Util.getModified(130), Util.getModified(50), -999);
+		backupButtonRegion = new Region(SCREEN_SIZE.width - Util.getModified(145),
+				SCREEN_SIZE.height - Util.getModified(145), Util.getModified(80), Util.getModified(80), -999);
 		setDeckRegion = new Region(
 				((SCREEN_SIZE.width / 2) - CARD_SIZE.width) - 15,
-				(SCREEN_SIZE.height - CARD_SIZE.height) - 50, CARD_SIZE, -999);
+				(SCREEN_SIZE.height - CARD_SIZE.height) - Util.getModified(50), CARD_SIZE, -999);
 		setCardRegion = new Region((SCREEN_SIZE.width / 2) + 15,
-				(SCREEN_SIZE.height - CARD_SIZE.height) - 50, CARD_SIZE, -999);
-		fullScreenButtonRegion = new Region(SCREEN_SIZE.width - 165, 57, 130,
-				35, -999);
+				(SCREEN_SIZE.height - CARD_SIZE.height) - Util.getModified(50), CARD_SIZE, -999);
+		fullScreenButtonRegion = new Region(SCREEN_SIZE.width - Util.getModified(165), Util.getModified(57), Util.getModified(130),
+				Util.getModified(35), -999);
 		this.assignRegions();
 		frame.setVisible(true);
 		frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
@@ -304,7 +304,7 @@ public final class Game {
 	}
 
 	private void assignRegions() {
-		final int QUARTER = (SCREEN_SIZE.width - (3 * CARD_SIZE.width)) / 4;
+		final int QUARTER = (Util.getModified(Toolkit.getDefaultToolkit().getScreenSize().width) - (3 * CARD_SIZE.width)) / 4;
 		int y = 90;
 		final int A = QUARTER;
 		final int B = (2 * QUARTER) + CARD_SIZE.width;
@@ -412,15 +412,15 @@ public final class Game {
 		g.fillRoundRect(newGameRegion.getX() + xOffset, newGameRegion.getY()
 				+ yOffset, newGameRegion.getWidth(), newGameRegion.getHeight(),
 				30, 30);
-		g.setFont(new Font("Verdana", Font.ITALIC, 18));
+		g.setFont(new Font("Verdana", Font.ITALIC, Util.getModified(17) + 1));
 		g.setColor(new Color(240, 240, 240));
-		g.drawString("NEW GAME", newGameRegion.getX() + 13 + xOffset,
-				newGameRegion.getY() + 30 + yOffset);
+		g.drawString("NEW GAME", newGameRegion.getX() + Util.getModified(13) + xOffset,
+				newGameRegion.getY() + Util.getModified(30) + yOffset);
 		g.setColor(Color.BLACK);
-		g.drawString("UNDO", backupButtonRegion.getX() + 14 + xOffset,
-				backupButtonRegion.getY() + 44 + yOffset);
-		g.drawString("FULLSCREEN", fullScreenButtonRegion.getX() + 5 + xOffset,
-				fullScreenButtonRegion.getY() + 22 + yOffset);
+		g.drawString("UNDO", backupButtonRegion.getX() + Util.getModified(14) + xOffset,
+				backupButtonRegion.getY() + Util.getModified(44) + yOffset);
+		g.drawString("FULLSCREEN", fullScreenButtonRegion.getX() + Util.getModified(5) + xOffset,
+				fullScreenButtonRegion.getY() + Util.getModified(22) + yOffset);
 		this.assignActiveRegions();
 		for (int i = 0; i < 28; i++) {
 			if (deck.cards[i] != null)
